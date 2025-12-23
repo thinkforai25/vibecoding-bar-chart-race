@@ -15,7 +15,8 @@ async function _data(FileAttachment,d3) {
     d => d.topname
   ).flatMap(([year, entries]) =>
     entries.map(([topname, value]) => ({
-      date: new Date(year, 0, 1),
+      // Use UTC to avoid timezone offsets that would display the wrong year.
+      date: new Date(Date.UTC(year, 0, 1)),
       name: topname,
       value
     }))
@@ -63,7 +64,7 @@ async function* _chart(replay,d3,width,height,bars,axis,labels,ticker,keyframes,
 
 
 function _duration(){return(
-250
+1500
 )}
 
 function _n(){return(
