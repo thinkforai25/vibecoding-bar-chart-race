@@ -209,7 +209,7 @@ function axis(svg) {
 function _ticker(barSize,width,marginTop,n,formatDate,keyframes){return(
 function ticker(svg) {
   const now = svg.append("text")
-      .style("font", `bold ${barSize}px var(--sans-serif)`)
+      .style("font", `bold ${Math.round(barSize * 1.25)}px var(--sans-serif)`)
       .style("font-variant-numeric", "tabular-nums")
       .attr("text-anchor", "end")
       .attr("x", width - 6)
