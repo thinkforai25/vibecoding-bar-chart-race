@@ -3,7 +3,7 @@ md`<div style="color: grey; font: 13px/25.5px var(--sans-serif); text-transform:
 
 # Bar Chart Race
 
-This chart animates annual totals (in New Taiwan dollars) for central government departments from 2015 to 2019. Color indicates the department category. Data: [tw2015_2019.csv](./files/tw2015_2019.csv)`
+This chart animates annual totals (in New Taiwan dollars) for central government top-level agencies (topname) from 2015 to 2019. Color indicates the category. Data: [tw2015_2019.csv](./files/tw2015_2019.csv)`
 )}
 
 async function _data(FileAttachment,d3){return(
@@ -11,15 +11,15 @@ await (async () => {
   const raw = await FileAttachment("tw2015_2019.csv").csv({typed: true});
   const normalized = raw.map(d => ({
     year: +(d.year ?? d["﻿year"]),
-    depname: d.depname,
-    depcat: d.depcat,
+    topname: d.topname,
+    category: d.cat,
     amount: +d.amount
-  })).filter(d => Number.isFinite(d.year) && d.depname && Number.isFinite(d.amount));
+  })).filter(d => Number.isFinite(d.year) && d.topname && Number.isFinite(d.amount));
 
   const categoryByDepartment = new Map();
   for (const row of normalized) {
-    if (!categoryByDepartment.has(row.depname)) {
-      categoryByDepartment.set(row.depname, row.depcat);
+    if (!categoryByDepartment.has(row.topname)) {
+      categoryByDepartment.set(row.topname, row.category);
     }
   }
 
@@ -28,7 +28,7 @@ await (async () => {
       normalized,
       values => d3.sum(values, d => d.amount),
       d => +d.year,
-      d => d.depname
+      d => d.topname
     ),
     ([year, departments]) => departments.map(([name, value]) => ({
       name,
