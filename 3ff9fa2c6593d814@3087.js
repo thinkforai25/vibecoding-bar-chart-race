@@ -3,11 +3,41 @@ md`<div style="color: grey; font: 13px/25.5px var(--sans-serif); text-transform:
 
 # Bar Chart Race
 
-This chart animates the value (in $M) of the top global brands from 2000 to 2019. Color indicates sector. See [the explainer](/d/e9e3929cf7c50b45) for more. Data: [Interbrand](https://www.interbrand.com/best-brands/)`
+This chart animates annual totals (in New Taiwan dollars) for central government departments from 2015 to 2019. Color indicates the department category. Data: [tw2015_2019.csv](./files/tw2015_2019.csv)`
 )}
 
-function _data(FileAttachment){return(
-FileAttachment("category-brands.csv").csv({typed: true})
+async function _data(FileAttachment,d3){return(
+await (async () => {
+  const raw = await FileAttachment("tw2015_2019.csv").csv({typed: true});
+  const normalized = raw.map(d => ({
+    year: +(d.year ?? d["﻿year"]),
+    depname: d.depname,
+    depcat: d.depcat,
+    amount: +d.amount
+  })).filter(d => Number.isFinite(d.year) && d.depname && Number.isFinite(d.amount));
+
+  const categoryByDepartment = new Map();
+  for (const row of normalized) {
+    if (!categoryByDepartment.has(row.depname)) {
+      categoryByDepartment.set(row.depname, row.depcat);
+    }
+  }
+
+  return Array.from(
+    d3.rollups(
+      normalized,
+      values => d3.sum(values, d => d.amount),
+      d => +d.year,
+      d => d.depname
+    ),
+    ([year, departments]) => departments.map(([name, value]) => ({
+      name,
+      category: categoryByDepartment.get(name),
+      date: year,
+      value
+    }))
+  ).flat();
+})()
 )}
 
 function _replay(html){return(
@@ -278,11 +308,11 @@ export default function define(runtime, observer) {
   const main = runtime.module();
   function toString() { return this.url; }
   const fileAttachments = new Map([
-    ["category-brands.csv", {url: new URL("./files/aec3792837253d4c6168f9bbecdf495140a5f9bb1cdb12c7c8113cec26332634a71ad29b446a1e8236e0a45732ea5d0b4e86d9d1568ff5791412f093ec06f4f1.csv", import.meta.url), mimeType: "text/csv", toString}]
+    ["tw2015_2019.csv", {url: new URL("./files/tw2015_2019.csv", import.meta.url), mimeType: "text/csv", toString}]
   ]);
   main.builtin("FileAttachment", runtime.fileAttachments(name => fileAttachments.get(name)));
   main.variable(observer()).define(["md"], _1);
-  main.variable(observer("data")).define("data", ["FileAttachment"], _data);
+  main.variable(observer("data")).define("data", ["FileAttachment","d3"], _data);
   main.variable(observer("viewof replay")).define("viewof replay", ["html"], _replay);
   main.variable(observer("replay")).define("replay", ["Generators", "viewof replay"], (G, _) => G.input(_));
   main.variable(observer("chart")).define("chart", ["replay","d3","width","height","bars","axis","labels","ticker","keyframes","duration","x","invalidation"], _chart);
