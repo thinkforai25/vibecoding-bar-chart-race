@@ -15,7 +15,8 @@ async function _data(FileAttachment,d3) {
     d => d.topname
   ).flatMap(([year, entries]) =>
     entries.map(([topname, value]) => ({
-      date: new Date(year, 0, 1),
+      // Use UTC to avoid timezone offsets that would display the wrong year.
+      date: new Date(Date.UTC(year, 0, 1)),
       name: topname,
       value
     }))
@@ -63,7 +64,7 @@ async function* _chart(replay,d3,width,height,bars,axis,labels,ticker,keyframes,
 
 
 function _duration(){return(
-250
+1500
 )}
 
 function _n(){return(
@@ -221,7 +222,7 @@ function axis(svg) {
 function _ticker(barSize,width,marginTop,n,formatDate,keyframes){return(
 function ticker(svg) {
   const now = svg.append("text")
-      .style("font", `bold ${Math.round(barSize * 1.6)}px var(--sans-serif)`)
+      .style("font", `bold ${Math.round(barSize * 1.6 * 5)}px var(--sans-serif)`)
       .style("font-variant-numeric", "tabular-nums")
       .attr("text-anchor", "end")
       .attr("x", width - 6)
